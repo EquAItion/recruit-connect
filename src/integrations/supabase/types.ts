@@ -14,7 +14,214 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      calls: {
+        Row: {
+          bolna_call_id: string | null
+          candidate_id: string | null
+          company_profile_id: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          notes: string | null
+          outcome: string | null
+          phone_number_id: string | null
+          started_at: string
+          status: string
+          summary: string | null
+          transcript: string | null
+          user_id: string
+        }
+        Insert: {
+          bolna_call_id?: string | null
+          candidate_id?: string | null
+          company_profile_id?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          phone_number_id?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+          transcript?: string | null
+          user_id: string
+        }
+        Update: {
+          bolna_call_id?: string | null
+          candidate_id?: string | null
+          company_profile_id?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          phone_number_id?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+          transcript?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calls_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calls_company_profile_id_fkey"
+            columns: ["company_profile_id"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calls_phone_number_id_fkey"
+            columns: ["phone_number_id"]
+            isOneToOne: false
+            referencedRelation: "phone_numbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidates: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          job_title: string | null
+          linkedin_url: string | null
+          location: string | null
+          notes: string | null
+          phone: string
+          resume_url: string | null
+          skills: string[] | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          job_title?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          phone: string
+          resume_url?: string | null
+          skills?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          job_title?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string
+          resume_url?: string | null
+          skills?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      company_profiles: {
+        Row: {
+          company_name: string
+          created_at: string
+          description: string | null
+          id: string
+          is_default: boolean
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      phone_numbers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          phone_number: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          phone_number: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          phone_number?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
