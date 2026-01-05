@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
+# Recruit Connect - Bolna AI Voice Calling Demo
 
-## Project info
+A demo recruiting application showcasing **Bolna AI voice calling integration** for automated candidate outreach.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+- **Bolna AI Voice Calls**: Automated voice calls to candidates using AI agents
+- **Candidate Management**: Add, view, and manage candidate information
+- **Call Testing**: Direct API testing interface for Bolna integration
+- **Mock Backend**: In-memory data storage for demonstration purposes
 
-There are several ways of editing your application.
+## Quick Start
 
-**Use Lovable**
+### Prerequisites
+- Node.js & npm installed
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Setup
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+1. **Clone and install dependencies**:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+cd recruit-connect
 npm i
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. **Setup backend**:
+```sh
+cd backend
+npm i
+```
+
+3. **Configure Bolna API**:
+   - Get your API key from [Bolna.ai](https://www.bolna.ai)
+   - Update `backend/.env` with your Bolna API key:
+```
+PORT=3001
+BOLNA_API_KEY=your-bolna-api-key-here
+```
+
+4. **Start the application**:
+```sh
+# Terminal 1: Start backend
+cd backend && npm start
+
+# Terminal 2: Start frontend  
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Usage
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Test Bolna API**: Visit http://localhost:8080/test-call
+   - Enter phone number in E.164 format (e.g., +918090990117)
+   - Enter your Bolna agent ID
+   - Click "Make Call" to test voice calling
 
-**Use GitHub Codespaces**
+2. **Manage Candidates**: Visit http://localhost:8080/candidates-new
+   - Add candidate information
+   - Make calls directly from candidate profiles
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Bolna API Integration
 
-## What technologies are used for this project?
+This demo follows the official [Bolna API documentation](https://www.bolna.ai/docs/api-reference/):
 
-This project is built with:
+- **Endpoint**: `https://api.bolna.ai/call`
+- **Authentication**: Bearer token with API key
+- **Phone Format**: E.164 international format required
+- **Payload**: `agent_id`, `recipient_phone_number`, optional `user_data`
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Tech Stack
 
-## How can I deploy this project?
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn-ui
+- **Backend**: Node.js, Express
+- **AI Voice**: Bolna AI API
+- **Demo Data**: In-memory storage (no database required)
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Demo Limitations
 
-## Can I connect a custom domain to my Lovable project?
+- Uses mock data (no persistent database)
+- Simplified authentication for testing
+- Designed for demonstration purposes only
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+**Note**: This is a demonstration project showcasing Bolna AI voice calling capabilities in a recruiting context.
