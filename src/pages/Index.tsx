@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
 import { 
   Users, 
   Phone, 
@@ -15,7 +15,6 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { Call, Candidate } from '@/types/database';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -26,8 +25,8 @@ export default function Dashboard() {
     completedCalls: 0,
     interestedCandidates: 0,
   });
-  const [recentCalls, setRecentCalls] = useState<Call[]>([]);
-  const [recentCandidates, setRecentCandidates] = useState<Candidate[]>([]);
+  const [recentCalls, setRecentCalls] = useState<any[]>([]);
+  const [recentCandidates, setRecentCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,52 +43,15 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      // Fetch candidates count
-      const { count: candidatesCount } = await supabase
-        .from('candidates')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch calls count
-      const { count: callsCount } = await supabase
-        .from('calls')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch completed calls count
-      const { count: completedCount } = await supabase
-        .from('calls')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'completed');
-
-      // Fetch interested candidates count
-      const { count: interestedCount } = await supabase
-        .from('candidates')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'interested');
-
+      // For now, just set mock data
       setStats({
-        totalCandidates: candidatesCount || 0,
-        totalCalls: callsCount || 0,
-        completedCalls: completedCount || 0,
-        interestedCandidates: interestedCount || 0,
+        totalCandidates: 0,
+        totalCalls: 0,
+        completedCalls: 0,
+        interestedCandidates: 0,
       });
-
-      // Fetch recent calls
-      const { data: calls } = await supabase
-        .from('calls')
-        .select('*')
-        .order('started_at', { ascending: false })
-        .limit(5);
-
-      setRecentCalls(calls as Call[] || []);
-
-      // Fetch recent candidates
-      const { data: candidates } = await supabase
-        .from('candidates')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      setRecentCandidates(candidates as Candidate[] || []);
+      setRecentCalls([]);
+      setRecentCandidates([]);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {

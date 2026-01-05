@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bolna API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Bolna API Test</h1>
+    
+    <form id="callForm">
+        <label>Phone Number:</label>
+        <input type="text" id="phone" placeholder="+1234567890" required>
+        
+        <label>Agent ID:</label>
+        <input type="text" id="agentId" value="0952dc64-49bb-482b-9fdf-dacb0befaa36" required>
+        
+        <button type="submit">Make Call</button>
+    </form>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        document.getElementById('callForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const phone = document.getElementById('phone').value;
+            const agentId = document.getElementById('agentId').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Making call...';
+            
+            try {
+                const response = await fetch('https://api.bolna.ai/call', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer bn-91690af72af44861aa503cbefacfab6b',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        agent_id: agentId,
+                        recipient_phone_number: phone,
+                        user_data: {
+                            test_call: true,
+                            timestamp: new Date().toISOString()
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>Response (${response.status}):</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                console.log('Bolna API Response:', data);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>Error:</h3>
+                    <pre>${error.message}</pre>
+                `;
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

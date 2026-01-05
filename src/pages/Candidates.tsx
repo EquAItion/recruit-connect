@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -59,6 +59,22 @@ export default function Candidates() {
   const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [calling, setCalling] = useState(false);
+
+  // Test function for debugging
+  const testBolnaAPI = async () => {
+    try {
+      const result = await apiClient.makeCall({
+        agent_id: '0952dc64-49bb-482b-9fdf-dacb0befaa36',
+        recipient_phone: '+918090990117',
+        user_data: { test: true }
+      });
+      console.log('Test API result:', result);
+      toast({ title: 'Test successful! Check console.' });
+    } catch (error: any) {
+      console.error('Test API error:', error);
+      toast({ variant: 'destructive', title: 'Test failed', description: error.message });
+    }
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -190,6 +206,14 @@ export default function Candidates() {
 
     setCalling(true);
     try {
+      console.log('Making call with:', {
+        user: user?.id,
+        session: !!session,
+        access_token: session?.access_token ? 'exists' : 'missing',
+        candidate: selectedCandidate.full_name,
+        agent_id: callFormData.agent_id
+      });
+      
       const selectedPhone = phoneNumbers.find(p => p.id === callFormData.phone_number_id);
       const selectedCompany = companies.find(c => c.id === callFormData.company_profile_id);
 
@@ -210,7 +234,7 @@ export default function Candidates() {
           action: 'make_call',
           agent_id: callFormData.agent_id,
           recipient_phone: selectedCandidate.phone,
-          from_phone: selectedPhone?.phone_number,
+          from_phone: callFormData.phone_number_id === 'bolna-managed' ? null : selectedPhone?.phone_number,
           user_data: {
             candidate_name: selectedCandidate.full_name,
             company_name: selectedCompany?.company_name,
@@ -220,6 +244,8 @@ export default function Candidates() {
       });
 
       if (error) throw error;
+
+      console.log('Bolna API response:', data);
 
       // Update call with Bolna call ID
       if (data?.id) {
@@ -233,6 +259,11 @@ export default function Candidates() {
       setIsCallDialogOpen(false);
       await handleUpdateStatus(selectedCandidate.id, 'contacted');
     } catch (error: any) {
+      console.error('Call error details:', {
+        error: error.message,
+        details: error.details || error,
+        status: error.status
+      });
       toast({
         variant: 'destructive',
         title: 'Error making call',
@@ -286,14 +317,18 @@ export default function Candidates() {
               Manage your candidate pipeline
             </p>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Candidate
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
+          <div className="flex gap-2">
+            <Button onClick={testBolnaAPI} variant="outline" size="sm">
+              Test API
+            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Candidate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Add New Candidate</DialogTitle>
                 <DialogDescription>
@@ -317,7 +352,7 @@ export default function Candidates() {
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+1234567890"
+                      placeholder="+918090990117"
                       required
                     />
                   </div>
@@ -394,6 +429,7 @@ export default function Candidates() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Filters */}
@@ -571,15 +607,16 @@ export default function Candidates() {
             </DialogHeader>
             <form onSubmit={handleMakeCall} className="space-y-4">
               <div className="space-y-2">
-                <Label>Calling Number</Label>
+                <Label>Calling Number (Optional)</Label>
                 <Select
                   value={callFormData.phone_number_id}
                   onValueChange={(value) => setCallFormData({ ...callFormData, phone_number_id: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a phone number" />
+                    <SelectValue placeholder="Use Bolna managed number" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="bolna-managed">Use Bolna managed number</SelectItem>
                     {phoneNumbers.map((phone) => (
                       <SelectItem key={phone.id} value={phone.id}>
                         {phone.label ? `${phone.label} - ` : ''}{phone.phone_number}
@@ -587,11 +624,9 @@ export default function Candidates() {
                     ))}
                   </SelectContent>
                 </Select>
-                {phoneNumbers.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    No phone numbers configured. Add one in Settings.
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground">
+                  Leave empty to use Bolna's managed phone number for testing
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Company Profile</Label>

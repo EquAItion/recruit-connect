@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
@@ -31,7 +31,6 @@ import {
   MessageSquare,
   Calendar
 } from 'lucide-react';
-import { Call, CallOutcome, Candidate } from '@/types/database';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -39,15 +38,15 @@ export default function Calls() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [calls, setCalls] = useState<(Call & { candidate?: Candidate })[]>([]);
+  const [calls, setCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const [selectedCall, setSelectedCall] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [outcomeNotes, setOutcomeNotes] = useState('');
-  const [selectedOutcome, setSelectedOutcome] = useState<CallOutcome | ''>('');
+  const [selectedOutcome, setSelectedOutcome] = useState<string>('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -63,29 +62,8 @@ export default function Calls() {
 
   const fetchCalls = async () => {
     try {
-      const { data, error } = await supabase
-        .from('calls')
-        .select('*')
-        .order('started_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch candidate details for each call
-      const callsWithCandidates = await Promise.all(
-        (data || []).map(async (call) => {
-          if (call.candidate_id) {
-            const { data: candidate } = await supabase
-              .from('candidates')
-              .select('*')
-              .eq('id', call.candidate_id)
-              .maybeSingle();
-            return { ...call, candidate: candidate as Candidate | undefined };
-          }
-          return call;
-        })
-      );
-
-      setCalls(callsWithCandidates as (Call & { candidate?: Candidate })[]);
+      const data = await apiClient.getCalls();
+      setCalls(data || []);
     } catch (error) {
       console.error('Error fetching calls:', error);
     } finally {
@@ -98,32 +76,11 @@ export default function Calls() {
 
     setUpdating(true);
     try {
-      const { error } = await supabase
-        .from('calls')
-        .update({
-          outcome: selectedOutcome,
-          notes: outcomeNotes || null,
-          status: 'completed',
-          ended_at: new Date().toISOString(),
-        })
-        .eq('id', selectedCall.id);
-
-      if (error) throw error;
-
-      // Update candidate status based on outcome
-      if (selectedCall.candidate_id) {
-        let candidateStatus: string | null = null;
-        if (selectedOutcome === 'interested') candidateStatus = 'interested';
-        else if (selectedOutcome === 'not_interested') candidateStatus = 'not_interested';
-        else if (selectedOutcome === 'callback_requested') candidateStatus = 'scheduled';
-
-        if (candidateStatus) {
-          await supabase
-            .from('candidates')
-            .update({ status: candidateStatus })
-            .eq('id', selectedCall.candidate_id);
-        }
-      }
+      await apiClient.updateCall(selectedCall.id, {
+        outcome: selectedOutcome,
+        notes: outcomeNotes || null,
+        status: 'completed',
+      });
 
       toast({ title: 'Call outcome updated' });
       setIsDetailsOpen(false);
@@ -139,30 +96,8 @@ export default function Calls() {
     }
   };
 
-  const fetchCallTranscript = async (call: Call) => {
-    if (!call.bolna_call_id) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('bolna-call', {
-        body: {
-          action: 'get_transcript',
-          call_id: call.bolna_call_id,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.transcript) {
-        await supabase
-          .from('calls')
-          .update({ transcript: data.transcript })
-          .eq('id', call.id);
-
-        setSelectedCall({ ...call, transcript: data.transcript });
-      }
-    } catch (error) {
-      console.error('Error fetching transcript:', error);
-    }
+  const fetchCallTranscript = async (call: any) => {
+    console.log('Fetch transcript not implemented yet');
   };
 
   const filteredCalls = calls.filter(call => {

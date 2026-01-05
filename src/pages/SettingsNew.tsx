@@ -23,10 +23,22 @@ import {
   Phone, 
   Building2, 
   Trash2,
-  Edit,
   Check
 } from 'lucide-react';
-import { PhoneNumber, CompanyProfile } from '@/types/database';
+
+interface PhoneNumber {
+  id: string;
+  phone_number: string;
+  label?: string;
+  is_active: boolean;
+}
+
+interface CompanyProfile {
+  id: string;
+  company_name: string;
+  description?: string;
+  is_default: boolean;
+}
 
 export default function Settings() {
   const { user, loading: authLoading } = useAuth();
@@ -93,38 +105,6 @@ export default function Settings() {
     }
   };
 
-  const handleDeletePhone = async (id: string) => {
-    try {
-      const { error } = await supabase.from('phone_numbers').delete().eq('id', id);
-      if (error) throw error;
-      toast({ title: 'Phone number deleted' });
-      fetchData();
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error deleting phone number',
-        description: error.message,
-      });
-    }
-  };
-
-  const handleTogglePhone = async (id: string, is_active: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('phone_numbers')
-        .update({ is_active })
-        .eq('id', id);
-      if (error) throw error;
-      fetchData();
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error updating phone number',
-        description: error.message,
-      });
-    }
-  };
-
   const handleAddCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -148,46 +128,6 @@ export default function Settings() {
     }
   };
 
-  const handleDeleteCompany = async (id: string) => {
-    try {
-      const { error } = await supabase.from('company_profiles').delete().eq('id', id);
-      if (error) throw error;
-      toast({ title: 'Company profile deleted' });
-      fetchData();
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error deleting company',
-        description: error.message,
-      });
-    }
-  };
-
-  const handleSetDefault = async (id: string) => {
-    try {
-      // Remove default from all
-      await supabase
-        .from('company_profiles')
-        .update({ is_default: false })
-        .eq('user_id', user!.id);
-
-      // Set new default
-      const { error } = await supabase
-        .from('company_profiles')
-        .update({ is_default: true })
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchData();
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error setting default',
-        description: error.message,
-      });
-    }
-  };
-
   if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -199,7 +139,6 @@ export default function Settings() {
   return (
     <Layout>
       <div className="space-y-8 animate-fade-in">
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-display font-bold">Settings</h1>
           <p className="mt-1 text-muted-foreground">
@@ -241,7 +180,7 @@ export default function Settings() {
                         id="phone_number"
                         value={phoneForm.phone_number}
                         onChange={(e) => setPhoneForm({ ...phoneForm, phone_number: e.target.value })}
-                        placeholder="+1234567890"
+                        placeholder="+918090990117"
                         required
                       />
                     </div>
@@ -285,8 +224,8 @@ export default function Settings() {
                       className="flex items-center justify-between rounded-lg bg-muted/50 p-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${phone.is_active ? 'bg-primary/20' : 'bg-muted'}`}>
-                          <Phone className={`h-4 w-4 ${phone.is_active ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                          <Phone className="h-4 w-4 text-primary" />
                         </div>
                         <div>
                           <p className="font-medium">{phone.phone_number}</p>
@@ -294,20 +233,6 @@ export default function Settings() {
                             <p className="text-sm text-muted-foreground">{phone.label}</p>
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Switch
-                          checked={phone.is_active}
-                          onCheckedChange={(checked) => handleTogglePhone(phone.id, checked)}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => handleDeletePhone(phone.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   ))}
@@ -418,26 +343,6 @@ export default function Settings() {
                             <p className="text-sm text-muted-foreground line-clamp-1">{company.description}</p>
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!company.is_default && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleSetDefault(company.id)}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteCompany(company.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   ))}
